@@ -21,7 +21,12 @@ public class CORSFilter implements Filter {
 
         // Just ACCEPT and REPLY OK if OPTIONS
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
-        resp.addHeader("Access-Control-Allow-Origin","http://localhost:4200");
+        System.out.print(request.getHeader("Access-Control-Allow-Origin"));
+        if(request.getHeader("Origin") != null && (request.getHeader("Origin").equals("http://localhost:4200") ||request.getHeader("Origin").equals("http://localhost:1841") || request.getHeader("Origin").equals("https://testscoreservice.appspot.com") ))
+        {
+            resp.addHeader("Access-Control-Allow-Origin",request.getHeader("Origin"));
+        }
+
         resp.addHeader("Access-Control-Allow-Methods","GET,POST");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, 0");
         resp.addHeader("Access-Control-Allow-Credentials","true");

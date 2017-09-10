@@ -1,10 +1,10 @@
 package com.smodelware.smartcfa.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.appengine.api.datastore.Entity;
 import com.smodelware.smartcfa.util.ContentType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Item 
 {

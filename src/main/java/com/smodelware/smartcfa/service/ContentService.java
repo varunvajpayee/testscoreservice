@@ -16,6 +16,22 @@
 
 package com.smodelware.smartcfa.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.*;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.KeyFactory.Builder;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.common.collect.Table;
+import com.google.common.io.Files;
+import com.smodelware.smartcfa.CatalogManager;
+import com.smodelware.smartcfa.util.ContentType;
+import com.smodelware.smartcfa.vo.Item;
+import com.smodelware.smartcfa.vo.Question;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,34 +40,6 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
-
-import com.google.appengine.api.datastore.*;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.io.Files;
-import com.smodelware.smartcfa.vo.UserTest;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Service;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.appengine.api.datastore.KeyFactory.Builder;
-import com.google.appengine.api.datastore.Query.Filter;
-import com.google.appengine.api.datastore.Query.FilterOperator;
-import com.google.appengine.api.datastore.Query.FilterPredicate;
-import com.google.common.collect.Table;
-import com.smodelware.smartcfa.CatalogManager;
-import com.smodelware.smartcfa.util.ContentType;
-import com.smodelware.smartcfa.vo.Item;
-import com.smodelware.smartcfa.vo.Question;
 
 @Service
 public class ContentService 

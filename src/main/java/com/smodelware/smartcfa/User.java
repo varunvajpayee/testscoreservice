@@ -1,20 +1,18 @@
 package com.smodelware.smartcfa;
 
-import java.net.URISyntaxException;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.Gson;
+import com.smodelware.smartcfa.service.UserService;
+import com.smodelware.smartcfa.vo.UserVO;
+import org.glassfish.jersey.server.JSONP;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-
-import com.google.appengine.api.datastore.Entity;
-import com.smodelware.smartcfa.vo.UserVO;
-import org.glassfish.jersey.server.JSONP;
-
-import com.google.appengine.api.users.UserServiceFactory;
-import com.google.gson.Gson;
-import com.smodelware.smartcfa.service.UserService;
+import java.net.URISyntaxException;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)

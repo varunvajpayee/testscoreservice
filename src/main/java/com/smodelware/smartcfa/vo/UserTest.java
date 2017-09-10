@@ -1,8 +1,5 @@
 package com.smodelware.smartcfa.vo;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 

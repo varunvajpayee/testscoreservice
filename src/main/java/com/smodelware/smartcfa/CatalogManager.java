@@ -1,16 +1,10 @@
 package com.smodelware.smartcfa;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-
+import com.google.appengine.api.datastore.Entity;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.smodelware.smartcfa.util.CONTENT_CONSTANT;
+import com.smodelware.smartcfa.util.ContentType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -18,11 +12,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.StringUtils;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import com.smodelware.smartcfa.util.CONTENT_CONSTANT;
-import com.smodelware.smartcfa.util.ContentType;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 
 public class CatalogManager 

@@ -1,19 +1,13 @@
 package com.smodelware.smartcfa.service;
 
-import java.util.Arrays;
-import java.util.logging.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import com.smodelware.smartcfa.util.ContentType;
 import org.springframework.stereotype.Service;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.util.logging.Logger;
 
 @Service
 public class UserService
