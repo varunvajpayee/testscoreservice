@@ -78,13 +78,25 @@ public class UserService
 
 		Query.Filter propertyFilter =	new Query.FilterPredicate("userId", Query.FilterOperator.EQUAL, userId);
 		Query query = new Query("SETTING").setFilter(propertyFilter);
-		return datastore.prepare(query).asSingleEntity();
+		Entity userSetting =  datastore.prepare(query).asSingleEntity();
+		if(userSetting!=null){
+			return userSetting;
+		}
+
+        return getDefaultUserSetting();
 	}
 
+    public Entity getDefaultUserSetting() {
+        Entity userSetting = new Entity("SETTING");
+        userSetting.setProperty("userId",0);
+        userSetting.setProperty("noteContentLevel", ContentType.LOS.toString());
+        userSetting.setProperty("questionContentLevel", ContentType.LOS.toString());
+        userSetting.setProperty("questionPerPage", 5);
+        return userSetting;
+    }
 
 
-
-	public Entity findUserBasedOnUserNameAndPassword(String userName,String password)
+    public Entity findUserBasedOnUserNameAndPassword(String userName,String password)
 	{
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 

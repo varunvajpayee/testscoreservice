@@ -34,7 +34,7 @@ public class User
 	    {
 			Entity user = userService.saveUser(fullName,userName,email,password,"LOCAL","");
 			NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
-	        return Response.ok(1).cookie(cookie).build();
+	        return Response.ok(String.valueOf(user.getProperty("userId"))).cookie(cookie).build();
 	    }
 
 	@POST
@@ -47,6 +47,7 @@ public class User
 		UserVO userInput =g.fromJson(userString,UserVO.class);
 		Entity user = userService.saveUser(userInput.getFullName(),userInput.getUserName(),userInput.getEmail(),userInput.getPassword(),"LOCAL","");
 		NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
+		user.setProperty("password","ENCRYPTED");
 		return Response.ok(user).cookie(cookie).build();
 	}
 
@@ -93,7 +94,24 @@ public class User
 			if(user!=null)
 			{
 				NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
-				return Response.ok(1).cookie(cookie).build();
+				return Response.ok(user.getProperty("userId")).cookie(cookie).build();
+			}
+			else
+			{
+				return Response.serverError().entity("User Not Found").build();
+			}
+		}
+
+		@POST
+		@Path("/setCookie")
+		@Produces({"application/javascript"})
+		public Response setCookie(String userId)
+		{
+			Entity user = userService.findUserBasedOnUserId(userId);
+			if(user!=null)
+			{
+				NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
+				return Response.ok(user.getProperty("userId")).cookie(cookie).build();
 			}
 			else
 			{
@@ -114,6 +132,7 @@ public class User
 			if(user!=null)
 			{
 				NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
+				user.setProperty("password","ENCRYPTED");
 				return Response.ok(user).cookie(cookie).build();
 			}
 			else
@@ -267,26 +286,13 @@ public class User
 	@Produces({"application/javascript"})
 	public Response getUserSetting(@QueryParam("callback") String callback,@CookieParam("login") Cookie cookie)
 	{
-		java.net.URI location = null;
-		try {
-			location = new java.net.URI("../");
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
 		if (cookie != null)
 		{
-			Entity userSetting = userService.getUserSetting(cookie.getValue());
-			if(userSetting!=null)
-			{
-				return Response.ok(userSetting).build();
-			}
-			else
-			{
-				return Response.temporaryRedirect(location).build();
-			}
+            return Response.ok(userService.getUserSetting(cookie.getValue())).build();
 		}
-		return Response.temporaryRedirect(location).build();
+		else{
+            return Response.ok(userService.getDefaultUserSetting()).build();
+        }
 	}
 	    
 }

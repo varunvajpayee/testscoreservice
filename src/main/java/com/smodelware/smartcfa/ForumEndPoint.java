@@ -39,7 +39,7 @@ public class ForumEndPoint {
          DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
          Gson g =new Gson();
          Topic topic =g.fromJson(topicStr,Topic.class);
-         long timeasOff = System.nanoTime();
+         long timeasOff = System.currentTimeMillis();
          String topicId = "TOPIC_"+timeasOff;
          Entity topicEntity = new Entity("TOPIC", topicId);
          topicEntity.setProperty("userId",topic.getUser());
