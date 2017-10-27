@@ -263,8 +263,13 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 				e.printStackTrace();
 			}
 
+			if(relativePath.indexOf("http")== -1){
+				uri = "https://storage.googleapis.com/"+ URLEncoder.encode("testscoreservice.appspot.com/"+relativePath, "UTF-8");
+			}
+			else{
+				uri = relativePath;
+			}
 
-		   uri = "https://storage.googleapis.com/"+ URLEncoder.encode("testscoreservice.appspot.com/"+relativePath, "UTF-8");
 		    
 		    HttpTransport httpTransport = null;
 			try {
@@ -377,7 +382,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
       Entity course = new Entity(ContentType.COURSE.getContentType(), "CFA_LEVEL_3");
       course.setProperty("YEAR", "2017");
       course.setProperty("name", "CFA_LEVEL_3");
-      //course.setProperty("id", "cfa");
+      course.setProperty("URL", "https://drive.google.com/drive/folders/0B0zUJ7BVTHu5Z01XQmdsMHFRNEk?ths=true");
 
       int cqCount=0;
       Map<String, Map<String, LinkedHashMap<String, ArrayList<String>>>> rowMap =  catalogTable.rowMap();
@@ -388,6 +393,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
     	  aBook.setProperty("IDENTITY", rowEntry.getKey().split("\\$")[0]);
     	  aBook.setProperty("name", rowEntry.getKey().split("\\$")[1]);
           aBook.setProperty("PARENT_ID", "CFA_LEVEL_3");
+		  aBook.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
 
     	  for(Entry<String, LinkedHashMap<String, ArrayList<String>>>  valueMap:rowEntry.getValue().entrySet())
     	  {
@@ -396,6 +402,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
     		  aStudySession.setProperty("IDENTITY", valueMap.getKey().split("\\$")[0]);
     		  aStudySession.setProperty("name", valueMap.getKey().split("\\$")[1]);
               aStudySession.setProperty("PARENT_ID",  rowEntry.getKey().split("\\$")[0]);
+			  aStudySession.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
 
     		  for(Entry<String, ArrayList<String>>  entryMap:valueMap.getValue().entrySet())
         	  {
@@ -404,7 +411,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
     			  aReading.setProperty("IDENTITY", entryMap.getKey().split("\\$")[0]);
     			  aReading.setProperty("name", entryMap.getKey().split("\\$")[1]);
                   aReading.setProperty("PARENT_ID", valueMap.getKey().split("\\$")[0]);
-
+				  aReading.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
         		  //aReading.setProperty("los", entryMap.getValue());
         		  for(String aLosStr:entryMap.getValue())
         		  {
@@ -413,9 +420,21 @@ public Item getCatalogTree(String userId,String contentTypeStr)
         			  aLos.setProperty("IDENTITY", aLosStr.split("\\$")[0]);
         			  aLos.setProperty("name", aLosStr.split("\\$")[1]);
                       aLos.setProperty("PARENT_ID",entryMap.getKey().split("\\$")[0]);
+					  aLos.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
+
 					  lqCount = Integer.parseInt(aLosStr.split("\\$")[2]);
 					  rqCount = rqCount+lqCount;
 					  aLos.setProperty("Q_COUNT",lqCount);
+					  aLos.setProperty("URL", aLosStr.split("\\$")[3]);
+					  if(aReading.getProperty("URL")==null){
+						  aReading.setProperty("URL",aLosStr.split("\\$")[3]);
+					  }
+					  if(aStudySession.getProperty("URL")==null){
+						  aStudySession.setProperty("URL",aLosStr.split("\\$")[3]);
+					  }
+					  if(aBook.getProperty("URL")==null){
+						  aBook.setProperty("URL",aLosStr.split("\\$")[3]);
+					  }
         			  datastore.put(aLos);
         		  }
 				  sqCount = sqCount+rqCount;
@@ -436,7 +455,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
   		return course;
   }
 
-	private InputStream getInputStream(String fileUrl) {
+	/*private InputStream getInputStream(String fileUrl) {
 		InputStream ins =null;
 
 		if (false) {
@@ -446,8 +465,59 @@ public Item getCatalogTree(String userId,String contentTypeStr)
             ins = getContentFromLocalStorage(fileUrl);
         }
 		return ins;
-	}
+	}*/
 
+	public void performScriptOps() {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Query query = new Query("USER");
+		Iterable<Entity> entityIterator = datastore.prepare(query).asIterable();
+		for(Entity entity: entityIterator){
+			if(entity.getProperty("email").equals("test")){
+				entity.setProperty("type","PAID");
+			}
+			else{
+				entity.setProperty("type","FREE");
+			}
+
+			datastore.put(entity);
+		}
+
+		Entity aBook = new Entity("BOOK_MAP","CFA_B_1");
+		aBook.setProperty("IDENTITY","CFA_B_1");
+		aBook.setProperty("URL","https://docs.google.com/document/d/1VMvUZNLDU_sB56ZkSeVyLVY5x1ceY45SHJClADZxYJs");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5Ym0zZmRuQm9CR3c");
+		datastore.put(aBook);
+
+		aBook = new Entity("BOOK_MAP","CFA_B_2");
+		aBook.setProperty("IDENTITY","CFA_B_2");
+		aBook.setProperty("URL","https://docs.google.com/document/d/1kdizqGUzdPLpfJa44SSn4mia5otFvsFP-cLPe7196Ww");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5LTM5SkIyYVhwNkE");
+		datastore.put(aBook);
+
+		aBook = new Entity("BOOK_MAP","CFA_B_3");
+		aBook.setProperty("IDENTITY","CFA_B_3");
+		aBook.setProperty("URL","https://docs.google.com/document/d/1RTxcTVfOoql-_NXVxaNXCyLd3GBZBQ_F51M5-1NdOaE");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5ZXNnSmJrVF95MHc");
+		datastore.put(aBook);
+
+		aBook = new Entity("BOOK_MAP","CFA_B_4");
+		aBook.setProperty("IDENTITY","CFA_B_4");
+		aBook.setProperty("URL","https://docs.google.com/document/d/17KeZ1FRiqBOwBTxdvzoYg6L8q0BHYj6MyzAO44a5JzU");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5UUlsdWh6RzhicFE");
+		datastore.put(aBook);
+
+		aBook = new Entity("BOOK_MAP","CFA_B_5");
+		aBook.setProperty("IDENTITY","CFA_B_5");
+		aBook.setProperty("URL","https://docs.google.com/document/d/1l2c7QP7LxZ_Gd-_mgqdX2ByUEXV8rn5HDzRfJJnpaYg");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5dU5FV1lJZnVETGs");
+		datastore.put(aBook);
+
+		aBook = new Entity("BOOK_MAP","CFA_B_6");
+		aBook.setProperty("IDENTITY","CFA_B_6");
+		aBook.setProperty("URL","https://docs.google.com/document/d/1nOnziSXJJW84I7ftiZCEIrJcDMz-bUheG84aRNJAYyg");
+		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5bDYyLUtmempzTW8");
+		datastore.put(aBook);
+	}
 
 	public Entity loadContent(InputStream ins,String sheetName)
   {

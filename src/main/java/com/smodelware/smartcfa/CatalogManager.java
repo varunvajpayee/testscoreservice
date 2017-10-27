@@ -48,7 +48,7 @@ public class CatalogManager
                	catalogTable.put(tokens[0]+"$"+tokens[1], tokens[2]+"$"+tokens[3], readingToLosMap);
                 	
                	ArrayList<String> losList = readingToLosMap.get(tokens[4]+"$"+tokens[5]) ==null?new ArrayList<String>():readingToLosMap.get(tokens[4]+"$"+tokens[5]);
-               	losList.add(tokens[6]+"$"+tokens[7]+"$"+tokens[8]);
+               	losList.add(tokens[6]+"$"+tokens[7]+"$"+tokens[8]+"$"+tokens[9]);
                	readingToLosMap.put(tokens[4]+"$"+tokens[5], losList);
             }
         } 

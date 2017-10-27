@@ -15,7 +15,16 @@ public class Item
 	 List<Item> items= new ArrayList<Item>();
 	 String kind;
 	String ancestorId;
-	 
+	String url;
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -77,7 +86,7 @@ public class Item
 			String questionCount = String.valueOf(entity.getProperties().get("Q_COUNT"));
 			item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Total Questions:"+questionCount+")</b>");
 		}
-
+		item.setUrl(String.valueOf(entity.getProperties().get("URL")));
 		item.setAncestorId(ancestorId);
 		return item;
 	}

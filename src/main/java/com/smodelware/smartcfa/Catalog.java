@@ -3,6 +3,7 @@ package com.smodelware.smartcfa;
 import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
 import com.smodelware.smartcfa.service.ContentService;
+import com.smodelware.smartcfa.service.UserService;
 import com.smodelware.smartcfa.util.ContentType;
 import com.smodelware.smartcfa.vo.Item;
 import com.smodelware.smartcfa.vo.Question;
@@ -29,12 +30,14 @@ import java.util.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class Catalog {
     private final ContentService contentService;
+    private final UserService userService;
     @Context
     ServletContext context;
     private static final Logger log = Logger.getLogger(Catalog.class.getName());
     @Inject
-    public Catalog(ContentService contentService) {
+    public Catalog(ContentService contentService,UserService userService) {
         this.contentService = contentService;
+        this.userService = userService;
     }
 
     @GET
@@ -55,11 +58,20 @@ public class Catalog {
     {
         //String filename = context.getContextPath() + "/resources/catalog/SmartCFA.csv";
        // InputStream inputStream = context.getResourceAsStream(filename);
-        InputStream inputStream =  contentService.getContentFromCloudStorage("resources/catalog/SmartCFA.csv");
+        //InputStream inputStream =  contentService.getContentFromCloudStorage("resources/catalog/SmartCFA.csv");
+        InputStream inputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRrGxbPVhPDzIyFJswEcUQax7yokl4mnVmc7qBC-pFWF9LqESgsHXf9Nxl-tDCm9nJ_hPr_UZvlo-nO/pub?output=csv");
 
         return Response
             .ok(contentService.loadCatalog(inputStream))
             .build();
+    }
+
+    @GET
+    @Path("/performScriptOps")
+    public Response performScriptOps()
+    {
+        contentService.performScriptOps();
+        return Response.ok().build();
     }
     
     @GET
@@ -164,6 +176,39 @@ public class Catalog {
         }
 
         return Response.temporaryRedirect(location).build();
+    }
+
+    @GET
+    @Path("/downloadContent/{id}/{view}/{kind}")
+    @Produces({"application/pdf"})
+    public Response downloadContent(@PathParam("kind")String kind,@PathParam("id")String id,
+                                    @PathParam("view")String viewName,@CookieParam("login") Cookie cookie){
+
+
+        if (cookie != null) {
+            Entity user = userService.findUserBasedOnUserId(cookie.getValue());
+            if(user!=null && user.getProperty("type").equals("PAID")){
+                Entity content =contentService.queryEntityBasedOnKindAndIdWithoutParent(kind,id);
+                if(content!=null && content.getProperty("URL")!=null){
+                    String bookId = String.valueOf(content.getProperty("BOOK_ID"));
+                    Entity bookMapEntity = contentService.queryEntityBasedOnKindAndIdWithoutParent("BOOK_MAP",bookId);
+                    if(bookMapEntity!=null ){
+                      if("Npanel".equals(viewName))  {
+                          String docUrl = String.valueOf(bookMapEntity.getProperty("URL"));
+                          String pdfUrl = docUrl + "/export?format=pdf";
+                          return Response.ok(pdfUrl).build();
+                      }
+                      else if("QPanel".equals(viewName)){
+                          String pdfUrl = String.valueOf(bookMapEntity.getProperty("Q_URL"));
+                          return Response.ok(pdfUrl).build();
+                      }
+
+                    }
+
+                }
+            }
+        }
+        return Response.status(Response.Status.FORBIDDEN).entity("Only Paid Users can download").build();
     }
 
 
