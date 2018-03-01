@@ -28,6 +28,7 @@ public class UserService
 		 aUser.setProperty("loginType", loginType);
 		 aUser.setProperty("foreignUserId", foreignUserId);
 		 aUser.setProperty("userId",userId);
+		 aUser.setProperty("type","FREE");
 		 datastore.put(aUser);
 		 saveUserSetting(userId, ContentType.LOS.getContentType(),ContentType.LOS.getContentType(),"5");
 		 return aUser;

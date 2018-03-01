@@ -208,7 +208,7 @@ public class Catalog {
                 }
             }
         }
-        return Response.status(Response.Status.FORBIDDEN).entity("Only Paid Users can download").build();
+        return Response.status(Response.Status.PAYMENT_REQUIRED).entity("Only Paid Users can download").build();
     }
 
 
