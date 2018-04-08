@@ -31,7 +31,6 @@ public class CORSFilter implements Filter {
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, 0");
         resp.addHeader("Access-Control-Allow-Credentials","true");
 
-
         if ( request.getMethod().equals("OPTIONS") ) {
             resp.setStatus(HttpServletResponse.SC_OK);
             return;

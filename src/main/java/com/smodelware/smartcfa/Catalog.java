@@ -5,12 +5,14 @@ import com.google.appengine.api.datastore.Entity;
 import com.smodelware.smartcfa.service.ContentService;
 import com.smodelware.smartcfa.service.UserService;
 import com.smodelware.smartcfa.util.ContentType;
+import com.smodelware.smartcfa.util.CourseType;
 import com.smodelware.smartcfa.vo.Item;
 import com.smodelware.smartcfa.vo.Question;
 import com.smodelware.smartcfa.vo.UserTest;
 import org.glassfish.jersey.server.JSONP;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.util.StringUtils;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -53,16 +55,27 @@ public class Catalog {
     }
     
     @GET
-    @Path("/loadcatalog")
-    public Response loadCatalog() 
+    @Path("/loadindex/{course_name}")
+    public Response loadCatalog(@PathParam("course_name")String courseName)
     {
         //String filename = context.getContextPath() + "/resources/catalog/SmartCFA.csv";
        // InputStream inputStream = context.getResourceAsStream(filename);
         //InputStream inputStream =  contentService.getContentFromCloudStorage("resources/catalog/SmartCFA.csv");
-        InputStream inputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRrGxbPVhPDzIyFJswEcUQax7yokl4mnVmc7qBC-pFWF9LqESgsHXf9Nxl-tDCm9nJ_hPr_UZvlo-nO/pub?output=csv");
+        //InputStream l3InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRrGxbPVhPDzIyFJswEcUQax7yokl4mnVmc7qBC-pFWF9LqESgsHXf9Nxl-tDCm9nJ_hPr_UZvlo-nO/pub?output=csv"); //CFA LEVEL 3
+        Entity entity = null;
+
+        if(CourseType.CFA_LEVEL_3.getCourseType().equals(courseName)){
+            InputStream l3InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vTxP_Dv1YgM6OcmhT_4xMuwYn2Q_APGBcIesyPgcyZAABT78J0q9qErwt5d_dfZ4GsnXEi7JcjKBloE/pub?output=csv"); //CFA LEVEL 3
+            entity = contentService.loadCatalog(l3InputStream,CourseType.CFA_LEVEL_3.getCourseType(),"2018","https://docs.google.com/document/d/e/2PACX-1vQ_ft5XODlcwXLN3KrCVuWZBcQ57w6lJrluKNtYBHoveDxUwkbSvH9xNlqBQvZnmpkqKbehVhJPv7g7/pub");
+        }
+        else  {
+            InputStream l1InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vQze80FFjggeHGdEVDcRfavOF5C4X9O1qNn68B80Kqaq2KagInAJ1_m6JSHmG1_3y7Og4dNNcT35IvR/pub?output=csv"); //CFA LEVEL 1
+            entity =  contentService.loadCatalog(l1InputStream,CourseType.CFA_LEVEL_1.getCourseType(),"2018","https://docs.google.com/document/d/e/2PACX-1vQtZfBrOIWHVD-ZeLPgILBd8OfRUx7L8oj5ZNzo-7CS7hXHaUhaAPkaDrLwMT6njmG2Brnq6D9qisgl/pub");
+
+        }
 
         return Response
-            .ok(contentService.loadCatalog(inputStream))
+            .ok(entity)
             .build();
     }
 
@@ -81,9 +94,19 @@ public class Catalog {
         //String filename = context.getContextPath() + "/resources/catalog/CFAL3_RM_Question.csv";
         //String filename = context.getContextPath() + "/resources/catalog/CFAL3_Question.xlsx";
         //InputStream inputStream = context.getResourceAsStream(filename);
-        InputStream inputStream =  contentService.getContentFromCloudStorage("resources/catalog/CFAL3_Question.xlsx");
+        //InputStream inputStream =  contentService.getContentFromCloudStorage("resources/catalog/CFAL3_Question.xlsx");
+        //InputStream inputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBxeIyp68lSbXjb4tHCh2jOxOy92zGMkA_py2Eu4vbd0xgl0DKKkDeVnvl3es6MFp-NEHfH0OdH_ku/pub?output=xlsx");
+        InputStream inputStream = null;
+        if("CFA3".equals(sheetName)) {
+            inputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBxeIyp68lSbXjb4tHCh2jOxOy92zGMkA_py2Eu4vbd0xgl0DKKkDeVnvl3es6MFp-NEHfH0OdH_ku/pub?output=xlsx");
+        }
 
-        return Response.ok(contentService.loadContent(inputStream,sheetName)).build();
+        if("CFA1".equals(sheetName)) {
+            inputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vT_iZwgg2mGZYLVc_EYwatwd8zn2uPoTphpQhG_QF16_zZBh3V-ewQLOUhTbLtK6ArKiArLtldSR31z/pub?output=xlsx");
+        }
+
+
+        return Response.ok(contentService.loadContent(inputStream,null)).build();
 
     }
 
@@ -92,7 +115,7 @@ public class Catalog {
     @Path("/delete/{parent_key}")
     public Response deleteEntity(@PathParam("parent_key")String parentKey) 
     {
-    	String iParentKey=parentKey==null?"COUSE-CFA_LEVEL_3":parentKey;
+    	String iParentKey=parentKey==null?"COURSE-CFA_LEVEL_3":parentKey;
     	
         return Response
             .ok(contentService.deleteContent(iParentKey))
@@ -234,7 +257,7 @@ public class Catalog {
             Map<String, String> userAnswers = getQuestionAnswerMap(ajaxReq);
             contentService.updateUserTestEntityWithAnswer(userTestEntity,userAnswers);
             JSONObject jObject = new JSONObject(postBody);
-            String iParentId = ancestorId + "|" + kind + "-" + id;
+            String iParentId = StringUtils.isEmpty(ancestorId) || "null".equals(ancestorId)?kind + "-" + id:ancestorId + "|" + kind + "-" + id;
             log.info("getQuestionsForLos:ParentId:" + iParentId);
             boolean iAllowAnswers = false;
             if (jObject.has("allowAnswers")) {

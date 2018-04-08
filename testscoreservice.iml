@@ -36,6 +36,11 @@
         <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/main/java/META-INF/persistence.xml" />
       </configuration>
     </facet>
+    <facet type="google-app-engine" name="Google App Engine">
+      <configuration>
+        <sdk-home-path>$USER_HOME$/AppData/Local/Google/Cloud SDK/appengine-java-sdk-1.9.63/appengine-java-sdk-1.9.63</sdk-home-path>
+      </configuration>
+    </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
     <output url="file://$MODULE_DIR$/target/testscoreservice-1.0-SNAPSHOT/WEB-INF/classes" />
@@ -48,7 +53,7 @@
     </content>
     <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.google.appengine:appengine-api-1.0-sdk:1.9.34" level="project" />
+    <orderEntry type="library" name="Maven: com.google.appengine:appengine-api-1.0-sdk:1.9.63" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" name="Maven: jstl:jstl:1.2" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
@@ -122,8 +127,8 @@
     <orderEntry type="library" name="Maven: com.google.api-client:google-api-client:1.22.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.http-client:google-http-client-jackson2:1.22.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava-jdk5:17.0" level="project" />
-    <orderEntry type="library" name="Maven: com.google.appengine:appengine-testing:1.9.34" level="project" />
-    <orderEntry type="library" name="Maven: com.google.appengine:appengine-api-stubs:1.9.34" level="project" />
+    <orderEntry type="library" name="Maven: com.google.appengine:appengine-testing:1.9.63" level="project" />
+    <orderEntry type="library" name="Maven: com.google.appengine:appengine-api-stubs:1.9.63" level="project" />
     <orderEntry type="library" name="Maven: com.google.api-client:google-api-client-appengine:1.21.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.oauth-client:google-oauth-client-appengine:1.21.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.oauth-client:google-oauth-client-servlet:1.21.0" level="project" />

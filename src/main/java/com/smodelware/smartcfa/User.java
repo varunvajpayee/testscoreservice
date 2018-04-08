@@ -30,9 +30,9 @@ public class User
 	    @Produces({"application/javascript"})
 	    public Response saveUser(@FormParam("fullName")String fullName,
 	    		@FormParam("userName")String userName,@FormParam("email")String email,
-	    		@FormParam("password")String password,@FormParam("isTermAccepted")String isTermAccepted)
+	    		@FormParam("password")String password,@FormParam("isTermAccepted")String isTermAccepted,@FormParam("course")String course)
 	    {
-			Entity user = userService.saveUser(fullName,userName,email,password,"LOCAL","");
+			Entity user = userService.saveUser(fullName,userName,email,password,"LOCAL","",course);
 			NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
 	        return Response.ok(String.valueOf(user.getProperty("userId"))).cookie(cookie).build();
 	    }
@@ -45,7 +45,7 @@ public class User
 	{
 		Gson g =new Gson();
 		UserVO userInput =g.fromJson(userString,UserVO.class);
-		Entity user = userService.saveUser(userInput.getFullName(),userInput.getUserName(),userInput.getEmail(),userInput.getPassword(),"LOCAL","");
+		Entity user = userService.saveUser(userInput.getFullName(),userInput.getUserName(),userInput.getEmail(),userInput.getPassword(),"LOCAL","","ALL");
 		NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
 		user.setProperty("password","ENCRYPTED");
 		return Response.ok(user).cookie(cookie).build();
@@ -63,13 +63,10 @@ public class User
 	}*/
 
 	@GET
-	@Path("/saveUserSetting")
-	@JSONP(queryParam="callback")
+	@Path("/saveCourseEnrollment")
 	@Produces({"application/javascript"})
-	public Response saveUserSetting(@QueryParam("callback") String callback,@QueryParam("noteContentLevel")String noteContentLevel
-			,@QueryParam("questionContentLevel")String questionContentLevel
-			,@QueryParam("questionPerPage")String questionPerPage
-			,@CookieParam("login") Cookie cookie)
+	public Response saveCourseEnrollment(@CookieParam("login") Cookie cookie
+			,@QueryParam("course")String course)
 	{
 		java.net.URI location = null;
 		try {
@@ -78,7 +75,31 @@ public class User
 			e.printStackTrace();
 		}
 		if (cookie != null) {
-			Entity userSetting = userService.saveUserSetting(cookie.getValue(),noteContentLevel,questionContentLevel,questionPerPage);
+			Entity user = userService.findUserBasedOnUserId(cookie.getValue());
+			user.setProperty("course",course);
+			userService.saveUserEntity(user);
+			return Response.ok(user).build();
+		}
+		return Response.temporaryRedirect(location).build();
+	}
+	@GET
+	@Path("/saveUserSetting")
+	@JSONP(queryParam="callback")
+	@Produces({"application/javascript"})
+	public Response saveUserSetting(@QueryParam("callback") String callback,@QueryParam("noteContentLevel")String noteContentLevel
+			,@QueryParam("questionContentLevel")String questionContentLevel
+			,@QueryParam("questionPerPage")String questionPerPage
+			,@CookieParam("login") Cookie cookie
+			,@QueryParam("showCourses")String showCourses)
+	{
+		java.net.URI location = null;
+		try {
+			location = new java.net.URI("../");
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		if (cookie != null) {
+			Entity userSetting = userService.saveUserSetting(cookie.getValue(),noteContentLevel,questionContentLevel,questionPerPage,showCourses);
 			return Response.ok(userSetting).build();
 		}
 		return Response.temporaryRedirect(location).build();
@@ -217,7 +238,7 @@ public class User
 		if(googleUser!=null)
 		{
 			Entity user = userService.saveUser(googleUser.getNickname(),googleUser.getEmail(),googleUser.getEmail(),googleUser.getEmail()
-					,"GOOGLE",googleUser.getUserId());
+					,"GOOGLE",googleUser.getUserId(),"ALL");
 			NewCookie cookie = new NewCookie("login", String.valueOf(user.getProperty("userId")));
 			java.net.URI location = null;
 			try {

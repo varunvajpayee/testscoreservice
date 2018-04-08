@@ -3,6 +3,7 @@ package com.smodelware.smartcfa;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.smodelware.smartcfa.service.ContentService;
 import com.smodelware.smartcfa.util.CONTENT_CONSTANT;
 import com.smodelware.smartcfa.util.ContentType;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -16,10 +17,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.logging.Logger;
 
 
 public class CatalogManager 
 {
+    private static final Logger log = Logger.getLogger(CatalogManager.class.getName());
+
     public static void main(String[] args) throws FileNotFoundException 
     {
         String fileToParse = "C:/app/contentservice/testscoreservice/src/main/resources/SmartCFA.csv";
@@ -44,12 +48,12 @@ public class CatalogManager
             while ((line = fileReader.readLine()) != null) 
             {
                 String[] tokens = line.split(DELIMITER);
-               	LinkedHashMap<String, ArrayList<String>> readingToLosMap = catalogTable.get(tokens[0]+"$"+tokens[1], tokens[2]+"$"+tokens[3])==null?new LinkedHashMap<String, ArrayList<String>>():catalogTable.get(tokens[0]+"$"+tokens[1], tokens[2]+"$"+tokens[3]);
-               	catalogTable.put(tokens[0]+"$"+tokens[1], tokens[2]+"$"+tokens[3], readingToLosMap);
+               	LinkedHashMap<String, ArrayList<String>> readingToLosMap = catalogTable.get(tokens[0]+"$"+tokens[1]+"$"+tokens[2], tokens[3]+"$"+tokens[4]+"$"+tokens[5])==null?new LinkedHashMap<String, ArrayList<String>>():catalogTable.get(tokens[0]+"$"+tokens[1]+"$"+tokens[2], tokens[3]+"$"+tokens[4]+"$"+tokens[5]);
+               	catalogTable.put(tokens[0]+"$"+tokens[1]+"$"+tokens[2], tokens[3]+"$"+tokens[4]+"$"+tokens[5], readingToLosMap);
                 	
-               	ArrayList<String> losList = readingToLosMap.get(tokens[4]+"$"+tokens[5]) ==null?new ArrayList<String>():readingToLosMap.get(tokens[4]+"$"+tokens[5]);
-               	losList.add(tokens[6]+"$"+tokens[7]+"$"+tokens[8]+"$"+tokens[9]);
-               	readingToLosMap.put(tokens[4]+"$"+tokens[5], losList);
+               	ArrayList<String> losList = readingToLosMap.get(tokens[6]+"$"+tokens[7]+"$"+tokens[8]) ==null?new ArrayList<String>():readingToLosMap.get(tokens[6]+"$"+tokens[7]+"$"+tokens[8]);
+               	losList.add(tokens[9]+"$"+tokens[10]+"$"+tokens[11]+"$"+tokens[12]);
+               	readingToLosMap.put(tokens[6]+"$"+tokens[7]+"$"+tokens[8], losList);
             }
         } 
         catch (Exception e) {
@@ -143,8 +147,13 @@ public class CatalogManager
         DataFormatter formatter = new DataFormatter(); 
         while (iterator.hasNext()) {
             Row nextRow = iterator.next();
-            Entity aContent = new Entity(contentType.getContentType());
+            System.out.println("size:"+nextRow.getLastCellNum());
+            if(nextRow.getLastCellNum()<11){
+                continue;
+            }
 
+            Entity aContent = new Entity(contentType.getContentType());
+            log.info("Procesing Question:"+nextRow.getCell(1).getStringCellValue());
             aContent.setProperty(ContentType.LOS.getContentType(), nextRow.getCell(0).getStringCellValue());
             aContent.setProperty(ContentType.QUESTION.getContentType(), nextRow.getCell(1).getStringCellValue());
             aContent.setProperty(ContentType.ANSWER.getContentType(), nextRow.getCell(2).getStringCellValue());

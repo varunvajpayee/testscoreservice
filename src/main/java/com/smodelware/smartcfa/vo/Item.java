@@ -70,7 +70,7 @@ public class Item
 		this.kind = kind;
 	}
 	
-	public static Item convertEntityToItem(Entity entity,Boolean isLeaf,String ancestorId, String contentTypeStr)
+	public static Item convertEntityToItem(Entity entity,Boolean isLeaf,String ancestorId, String contentTypeStr,String url)
 	{
 		Item item = new Item();
 		item.setText(String.valueOf(entity.getProperties().get("name")));
@@ -86,17 +86,24 @@ public class Item
 			String questionCount = String.valueOf(entity.getProperties().get("Q_COUNT"));
 			item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Total Questions:"+questionCount+")</b>");
 		}
-		item.setUrl(String.valueOf(entity.getProperties().get("URL")));
+
+		if(entity.getProperty("URL")!=null){
+			item.setUrl(String.valueOf(entity.getProperty("URL")));
+		}
+		else {
+			item.setUrl(url+"#"+String.valueOf(entity.getProperty("URI")));
+		}
+
 		item.setAncestorId(ancestorId);
 		return item;
 	}
 	
-	public static List<Item> convertEntitiesToItem(List<Entity> entities,Boolean isLeaf,String ancestorId, String contentTypeStr)
+	public static List<Item> convertEntitiesToItem(List<Entity> entities,Boolean isLeaf,String ancestorId, String contentTypeStr,String url)
 	{
 		List<Item> itemList = new ArrayList<Item>();  
 		for(Entity entity:entities)
 		{
-			itemList.add(convertEntityToItem(entity,isLeaf,ancestorId,contentTypeStr));
+			itemList.add(convertEntityToItem(entity,isLeaf,ancestorId,contentTypeStr,url));
 		}	
 		return itemList;
 	}
