@@ -167,7 +167,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 	showCourses = showCourses == null?"ALL":showCourses;
 	String enrolledCourse = getUserEnrolledCourse(userId);
 	Boolean filterCourses = false;
-	if("ENROLLED".equals(showCourses) && !StringUtils.isEmpty(enrolledCourse)  ){
+	if("ENROLLED".equals(showCourses) && !StringUtils.isEmpty(enrolledCourse)  && !"ALL".equals(enrolledCourse) ){
 		filterCourses  = true;
 	}
 
@@ -520,49 +520,49 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA3_B_1");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1VMvUZNLDU_sB56ZkSeVyLVY5x1ceY45SHJClADZxYJs");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5Ym0zZmRuQm9CR3c");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_1.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_1.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_2");
 		aBook.setProperty("IDENTITY","CFA3_B_2");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1kdizqGUzdPLpfJa44SSn4mia5otFvsFP-cLPe7196Ww");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5LTM5SkIyYVhwNkE");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_2.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_2.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_3");
 		aBook.setProperty("IDENTITY","CFA3_B_3");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1RTxcTVfOoql-_NXVxaNXCyLd3GBZBQ_F51M5-1NdOaE");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5ZXNnSmJrVF95MHc");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_3.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_3.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_4");
 		aBook.setProperty("IDENTITY","CFA3_B_4");
 		aBook.setProperty("URL","https://docs.google.com/document/d/17KeZ1FRiqBOwBTxdvzoYg6L8q0BHYj6MyzAO44a5JzU");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5UUlsdWh6RzhicFE");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_4.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_4.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_5");
 		aBook.setProperty("IDENTITY","CFA3_B_5");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1l2c7QP7LxZ_Gd-_mgqdX2ByUEXV8rn5HDzRfJJnpaYg");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5dU5FV1lJZnVETGs");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_5.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_5.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_6");
 		aBook.setProperty("IDENTITY","CFA3_B_6");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1nOnziSXJJW84I7ftiZCEIrJcDMz-bUheG84aRNJAYyg");
 		aBook.setProperty("Q_URL","https://docs.google.com/document/d/e/2PACX-1vQ_poLw00ohiW_aTZWnKEIsNPmu9Wv1KZO2WQhDRIKJAtf6-sN911CZK3xHQAZOnjWnPvoSCGmRXKtt/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_6.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_6.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_1");
 		aBook.setProperty("IDENTITY","CFA1_B_1");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1KcJanOoQa9RlYTVAGI18SGtNLeYcyS340G3hZK2NNU4");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vRl6t7dSWKdOLqGwwLAF_mHOwZ5BExyu0sdZhhhIc9yrhV1doQ5WSkMqFGXKd0JpZUDoy3gjE7PJIvu/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_1.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_1.html");
 		//aBook.setProperty("HTML_URL","https://docs.google.com/document/d/e/2PACX-1vTlQNRJEcgofpI_KOP49nDzQrzZGkurbrxSueiWlwuLfSRGd5IHbJRLFWLtO2UlQs2-OEZXUeFxP0sz/pub?output=pdf");
 		datastore.put(aBook);
 
@@ -570,7 +570,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_2");
 		aBook.setProperty("URL","https://docs.google.com/document/d/18C9Rwr5aNCtjXu7zcc9v-NDwsSD2E8V1GNIWQhxTq_Q");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vR1IaBKkHoLa7V2zmjLprzcAukxNVew9ZpeEbAHglEnnPwmjKDFgFTamsR_ecxOO76n8swXKuWywqAE/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_2.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_2.html");
 		datastore.put(aBook);
 
 
@@ -578,7 +578,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_3");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1dNQ81zw46K6NRc2Ei3f1Asy2pgad2_D3aJtkMMZkq0Q");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_9X9GAnRvZJI8LT02aQNVpJgoDzqQlOKpIS1FZ6H9CGzu2KPi6eifn24RiqAbCjDO-2yPAHKL4J7/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_3.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_3.html");
 		datastore.put(aBook);
 
 
@@ -586,21 +586,21 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_4");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1IN2YuBKe_vQRlZ456BRCgPalgfhKkkvuMjjaGQ2XDmw");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vSo-1sWk99Dmhan7xCWGyPkWlZ2xLhAt5cm8nZ6JL9HmJHixSkmNVxg3t23toQCUQeTBgcjuXtOuDj3/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_4.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_4.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_5");
 		aBook.setProperty("IDENTITY","CFA1_B_5");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1jWpk7qTHe9waTsd3SThdW0nYcUyjGNaJCgp4i5d5o-w");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vSsDoqnRhQP5fEZRMcIvJdn9ESZO6lwrAX1slCDduddHjap74GVcn_QKlf4jK8_jy-Xy2SWyNfATfY_/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_5.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_5.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_6");
 		aBook.setProperty("IDENTITY","CFA1_B_6");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1iO6AZhvnmEgPtwTMlx1AQ7rruTBf3lPnJhrrt4u-bx8");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vQSOA3nTldlgKyJhkKcEcMqvmA_F0XOZGgequReBT90LVr-3Y00Y8Ci3msNA19zyiwmVPj3MDgLGDkt/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_6.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_6.html");
 		datastore.put(aBook);
 
 

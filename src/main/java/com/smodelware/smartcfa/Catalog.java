@@ -138,7 +138,22 @@ public class Catalog {
         }
 
         if (cookie != null) {
-            Item item = contentService.getCatalogTree(cookie.getValue(),iParamName);
+
+            Item item = null;
+            if("VIDEO".equals(iParamName)){
+                item = new Item();
+
+                Item courseItem = new Item();
+                courseItem.setKind("COURSE");
+                courseItem.setId("CFA_VIDEO");
+                courseItem.setLeaf(true);
+                courseItem.setText("Intro Video");
+                courseItem.setView("Vpanel");
+                item.getItems().add(courseItem);
+            }
+            else {
+                item = contentService.getCatalogTree(cookie.getValue(),iParamName);
+            }
             Response rs = Response.ok(item).build();
             return rs;
         }
