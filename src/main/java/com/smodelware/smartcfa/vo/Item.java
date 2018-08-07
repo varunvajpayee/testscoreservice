@@ -17,6 +17,17 @@ public class Item
 	String ancestorId;
 	String url;
 
+	public Long getqCount() {
+		return qCount;
+	}
+
+	public void setqCount(Long qCount) {
+		this.qCount = qCount;
+	}
+
+	Long qCount;
+
+
 	public String getUrl() {
 		return url;
 	}
@@ -77,15 +88,6 @@ public class Item
 		item.setId(String.valueOf(entity.getProperties().get("IDENTITY")));
 		item.setKind(entity.getKind());
 		item.setLeaf(isLeaf);
-		if( ContentType.NOTE.getContentType().equals(contentTypeStr)) {
-			item.setView("Npanel");
-			item.setText(String.valueOf(entity.getProperties().get("name")));
-		}
-		else if( ContentType.QUESTION.getContentType().equals(contentTypeStr)){
-			item.setView("QPanel");
-			String questionCount = String.valueOf(entity.getProperties().get("Q_COUNT"));
-			item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Total Questions:"+questionCount+")</b>");
-		}
 
 		if(entity.getProperty("URL")!=null){
 			item.setUrl(String.valueOf(entity.getProperty("URL")));
@@ -94,6 +96,31 @@ public class Item
 			item.setUrl(url+"#"+String.valueOf(entity.getProperty("URI")));
 		}
 
+		if( ContentType.NOTE.getContentType().equals(contentTypeStr)) {
+			item.setView("Npanel");
+			item.setText(String.valueOf(entity.getProperties().get("name")));
+		}
+		else if( ContentType.QUESTION.getContentType().equals(contentTypeStr)){
+			item.setView("QPanel");
+			Long questionCount = (Long) entity.getProperties().get("Q_COUNT");
+			if(questionCount==0){
+				return null;
+			}
+
+			item.setqCount(questionCount);
+			item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Total Questions:"+questionCount+")</b>");
+		}
+		else if( ContentType.VIDEO.getContentType().equals(contentTypeStr)) {
+			item.setView("Vpanel");
+			if(entity.getProperty("VIDEO_URL") !=null && !"NONE".equals(String.valueOf(entity.getProperty("VIDEO_URL"))))	{
+				item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Video Present)</b>");
+				item.setUrl(String.valueOf(entity.getProperty("VIDEO_URL"))+",");
+			}
+			else {
+				return null;
+			}
+
+		}
 		item.setAncestorId(ancestorId);
 		return item;
 	}

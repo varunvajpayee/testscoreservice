@@ -24,7 +24,7 @@ import com.google.appengine.api.datastore.KeyFactory.Builder;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
-import com.google.appengine.repackaged.com.google.datastore.v1.PropertyFilter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Table;
 import com.google.common.io.Files;
 import com.smodelware.smartcfa.CatalogManager;
@@ -167,7 +167,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 	showCourses = showCourses == null?"ALL":showCourses;
 	String enrolledCourse = getUserEnrolledCourse(userId);
 	Boolean filterCourses = false;
-	if("ENROLLED".equals(showCourses) && !StringUtils.isEmpty(enrolledCourse)  ){
+	if("ENROLLED".equals(showCourses) && !StringUtils.isEmpty(enrolledCourse)  && !"ALL".equals(enrolledCourse) ){
 		filterCourses  = true;
 	}
 
@@ -186,30 +186,50 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		List<Entity> bookEntities = queryEntityBasedOnKindAndName(cAncestorId, ContentType.BOOK.getContentType());
 		rootItem.getItems().add(courseItem);
 		for (Entity bookEntity : bookEntities) {
-			System.out.println("key:" + bookEntity.getProperties().get("BOOK_ID"));
+			log.info("key:" + bookEntity.getProperties().get("BOOK_ID"));
 			Query q = new Query("BOOK_MAP").setFilter(new FilterPredicate("IDENTITY", FilterOperator.EQUAL, bookEntity.getProperties().get("BOOK_ID")));
 			Entity userTestEntity = datastore.prepare(q).asSingleEntity();
 			String url = String.valueOf(userTestEntity.getProperties().get("HTML_URL"));
 
 			Item bookItem = Item.convertEntityToItem(bookEntity, false, cAncestorId, contentTypeStr, url);
-			courseItem.getItems().add(bookItem);
+			if (bookItem == null) {
+				continue;
+			}
+			else{
+				courseItem.getItems().add(bookItem);
+			}
 			if (!ContentType.BOOK.getContentType().equals(contentLevel)) {
 				String cbAncestorId = cAncestorId + "|" + bookItem.getKind() + "-" + bookItem.getId();
 				List<Entity> ssEntities = queryEntityBasedOnKindAndName(cbAncestorId, ContentType.STUDY_SESSION.getContentType());
 				for (Entity ssEntity : ssEntities) {
 					Item ssItem = Item.convertEntityToItem(ssEntity, false, cbAncestorId, contentTypeStr, url);
-					bookItem.getItems().add(ssItem);
+					if (ssItem == null) {
+						continue;
+					}
+					else{
+						bookItem.getItems().add(ssItem);
+					}
+
 					if (!ContentType.STUDY_SESSION.getContentType().equals(contentLevel)) {
 						String scbAncestorId = cbAncestorId + "|" + ssItem.getKind() + "-" + ssItem.getId();
 						List<Entity> readingEntities = queryEntityBasedOnKindAndName(scbAncestorId, ContentType.READING.getContentType());
 						for (Entity readingEntity : readingEntities) {
 							Item readingItem = Item.convertEntityToItem(readingEntity, false, scbAncestorId, contentTypeStr, url);
-							ssItem.getItems().add(readingItem);
+							if (readingItem == null) {
+								continue;
+							}
+							else{
+								ssItem.getItems().add(readingItem);
+							}
 							if (!ContentType.READING.getContentType().equals(contentLevel)) {
 								String rscbAncestorId = scbAncestorId + "|" + readingItem.getKind() + "-" + readingItem.getId();
 								List<Entity> losEntities = queryEntityBasedOnKindAndName(rscbAncestorId, "LOS");
 								List<Item> losItems = Item.convertEntitiesToItem(losEntities, true, rscbAncestorId, contentTypeStr, url);
-								readingItem.setItems(losItems);
+								for(Item item:losItems){
+									if(item!=null){
+										readingItem.getItems().add(item);
+									}
+								}
 							} else {
 								readingItem.setLeaf(true);
 							}
@@ -227,6 +247,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 	}
 	return rootItem;
 }
+
 
 	private Entity getUserSetting(String userId){
 		UserService userService = new UserService();
@@ -250,6 +271,9 @@ public Item getCatalogTree(String userId,String contentTypeStr)
         }
         else if(ContentType.QUESTION.getContentType().equals(contentTypeStr)) {
 			contentLevel = String.valueOf(userSettingEntity.getProperty("questionContentLevel"));
+        }
+        else if(ContentType.VIDEO.getContentType().equals(contentTypeStr)) {
+            contentLevel = ContentType.LOS.getContentType();
         }
 		contentLevel=contentLevel==null?ContentType.BOOK.getContentType():contentLevel;
 		return contentLevel;
@@ -415,7 +439,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
       course.setProperty("YEAR", courseYear);
       course.setProperty("name", courseName);
       course.setProperty("URL",url);
-
+      String courseVideoUrl="";
       int cqCount=0;
       Map<String, Map<String, LinkedHashMap<String, ArrayList<String>>>> rowMap =  catalogTable.rowMap();
       for(Entry<String, Map<String, LinkedHashMap<String, ArrayList<String>>>> rowEntry:rowMap.entrySet())
@@ -427,7 +451,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		  aBook.setProperty("URI", rowEntry.getKey().split("\\$")[2]);
           aBook.setProperty("PARENT_ID", courseName);
 		  aBook.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
-
+		  String bookVideoUrl="";
     	  for(Entry<String, LinkedHashMap<String, ArrayList<String>>>  valueMap:rowEntry.getValue().entrySet())
     	  {
 			  int sqCount=0;
@@ -437,7 +461,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 			  aStudySession.setProperty("URI", valueMap.getKey().split("\\$")[2]);
               aStudySession.setProperty("PARENT_ID",  aBook.getProperty("IDENTITY"));
 			  aStudySession.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
-
+			  String ssVideoUrl="";
     		  for(Entry<String, ArrayList<String>>  entryMap:valueMap.getValue().entrySet())
         	  {
 				  int rqCount=0;
@@ -448,6 +472,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
                   aReading.setProperty("PARENT_ID", aStudySession.getProperty("IDENTITY"));
 				  aReading.setProperty("BOOK_ID",aBook.getProperty("IDENTITY"));
         		  //aReading.setProperty("los", entryMap.getValue());
+				  String readingVideoUrl="";
         		  for(String aLosStr:entryMap.getValue())
         		  {
 					  int lqCount =0;
@@ -461,33 +486,55 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 					  lqCount = Integer.parseInt(aLosStr.split("\\$")[3]);
 					  rqCount = rqCount+lqCount;
 					  aLos.setProperty("Q_COUNT",lqCount);
-					  /*
-					  aLos.setProperty("URL", aLosStr.split("\\$")[3]);
-					  if(aReading.getProperty("URL")==null){
-						  aReading.setProperty("URL",aLosStr.split("\\$")[3]);
+					  String losVideoUrl = aLosStr.split("\\$")[4];
+                      aLos.setProperty("VIDEO_URL", losVideoUrl);
+                      if(!"NONE".equals(losVideoUrl)) {
+						  readingVideoUrl = readingVideoUrl + losVideoUrl+",";
 					  }
-					  if(aStudySession.getProperty("URL")==null){
-						  aStudySession.setProperty("URL",aLosStr.split("\\$")[3]);
-					  }
-					  if(aBook.getProperty("URL")==null){
-						  aBook.setProperty("URL",aLosStr.split("\\$")[3]);
-					  }*/
         			  datastore.put(aLos);
         		  }
 				  sqCount = sqCount+rqCount;
 				  aReading.setProperty("Q_COUNT",rqCount);
+				  if(!Strings.isNullOrEmpty(readingVideoUrl)){
+					  aReading.setProperty("VIDEO_URL", readingVideoUrl);
+					  ssVideoUrl = ssVideoUrl+readingVideoUrl;
+				  }
+				  else {
+					  aReading.setProperty("VIDEO_URL", "NONE");
+				  }
+
 				  datastore.put(aReading);
         	  }
 			  bqCount = bqCount+sqCount;
 			  aStudySession.setProperty("Q_COUNT",sqCount);
+			  if(!Strings.isNullOrEmpty(ssVideoUrl)){
+				  aStudySession.setProperty("VIDEO_URL", ssVideoUrl);
+				  bookVideoUrl = bookVideoUrl+ssVideoUrl;
+			  }
+			  else {
+				  aStudySession.setProperty("VIDEO_URL", "NONE");
+			  }
 			  datastore.put(aStudySession);
     	  }
 
 		  cqCount =cqCount+bqCount;
 		  aBook.setProperty("Q_COUNT",bqCount);
+		  if(!Strings.isNullOrEmpty(bookVideoUrl)){
+			  aBook.setProperty("VIDEO_URL", bookVideoUrl);
+			  courseVideoUrl = courseVideoUrl+bookVideoUrl;
+		  }
+		  else {
+			  aBook.setProperty("VIDEO_URL", "NONE");
+		  }
 		  datastore.put(aBook);
       }
 		course.setProperty("Q_COUNT",cqCount);
+		if(!Strings.isNullOrEmpty(courseVideoUrl)){
+			course.setProperty("VIDEO_URL", courseVideoUrl);
+		}
+		else {
+			course.setProperty("VIDEO_URL", "NONE");
+		}
 		datastore.put(course);
   		return course;
   }
@@ -520,49 +567,49 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA3_B_1");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1VMvUZNLDU_sB56ZkSeVyLVY5x1ceY45SHJClADZxYJs");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5Ym0zZmRuQm9CR3c");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_1.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_1.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_2");
 		aBook.setProperty("IDENTITY","CFA3_B_2");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1kdizqGUzdPLpfJa44SSn4mia5otFvsFP-cLPe7196Ww");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5LTM5SkIyYVhwNkE");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_2.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_2.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_3");
 		aBook.setProperty("IDENTITY","CFA3_B_3");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1RTxcTVfOoql-_NXVxaNXCyLd3GBZBQ_F51M5-1NdOaE");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5ZXNnSmJrVF95MHc");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_3.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_3.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_4");
 		aBook.setProperty("IDENTITY","CFA3_B_4");
 		aBook.setProperty("URL","https://docs.google.com/document/d/17KeZ1FRiqBOwBTxdvzoYg6L8q0BHYj6MyzAO44a5JzU");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5UUlsdWh6RzhicFE");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_4.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_4.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_5");
 		aBook.setProperty("IDENTITY","CFA3_B_5");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1l2c7QP7LxZ_Gd-_mgqdX2ByUEXV8rn5HDzRfJJnpaYg");
 		aBook.setProperty("Q_URL","https://drive.google.com/open?id=0B0zUJ7BVTHu5dU5FV1lJZnVETGs");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_5.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_5.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA3_B_6");
 		aBook.setProperty("IDENTITY","CFA3_B_6");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1nOnziSXJJW84I7ftiZCEIrJcDMz-bUheG84aRNJAYyg");
 		aBook.setProperty("Q_URL","https://docs.google.com/document/d/e/2PACX-1vQ_poLw00ohiW_aTZWnKEIsNPmu9Wv1KZO2WQhDRIKJAtf6-sN911CZK3xHQAZOnjWnPvoSCGmRXKtt/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level3/CFA3_B_6.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level3/NOTES/HTML/CFA3_B_6.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_1");
 		aBook.setProperty("IDENTITY","CFA1_B_1");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1KcJanOoQa9RlYTVAGI18SGtNLeYcyS340G3hZK2NNU4");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vRl6t7dSWKdOLqGwwLAF_mHOwZ5BExyu0sdZhhhIc9yrhV1doQ5WSkMqFGXKd0JpZUDoy3gjE7PJIvu/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_1.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_1.html");
 		//aBook.setProperty("HTML_URL","https://docs.google.com/document/d/e/2PACX-1vTlQNRJEcgofpI_KOP49nDzQrzZGkurbrxSueiWlwuLfSRGd5IHbJRLFWLtO2UlQs2-OEZXUeFxP0sz/pub?output=pdf");
 		datastore.put(aBook);
 
@@ -570,7 +617,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_2");
 		aBook.setProperty("URL","https://docs.google.com/document/d/18C9Rwr5aNCtjXu7zcc9v-NDwsSD2E8V1GNIWQhxTq_Q");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vR1IaBKkHoLa7V2zmjLprzcAukxNVew9ZpeEbAHglEnnPwmjKDFgFTamsR_ecxOO76n8swXKuWywqAE/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_2.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_2.html");
 		datastore.put(aBook);
 
 
@@ -578,7 +625,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_3");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1dNQ81zw46K6NRc2Ei3f1Asy2pgad2_D3aJtkMMZkq0Q");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_9X9GAnRvZJI8LT02aQNVpJgoDzqQlOKpIS1FZ6H9CGzu2KPi6eifn24RiqAbCjDO-2yPAHKL4J7/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_3.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_3.html");
 		datastore.put(aBook);
 
 
@@ -586,21 +633,21 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		aBook.setProperty("IDENTITY","CFA1_B_4");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1IN2YuBKe_vQRlZ456BRCgPalgfhKkkvuMjjaGQ2XDmw");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vSo-1sWk99Dmhan7xCWGyPkWlZ2xLhAt5cm8nZ6JL9HmJHixSkmNVxg3t23toQCUQeTBgcjuXtOuDj3/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_4.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_4.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_5");
 		aBook.setProperty("IDENTITY","CFA1_B_5");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1jWpk7qTHe9waTsd3SThdW0nYcUyjGNaJCgp4i5d5o-w");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vSsDoqnRhQP5fEZRMcIvJdn9ESZO6lwrAX1slCDduddHjap74GVcn_QKlf4jK8_jy-Xy2SWyNfATfY_/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_5.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_5.html");
 		datastore.put(aBook);
 
 		aBook = new Entity("BOOK_MAP","CFA1_B_6");
 		aBook.setProperty("IDENTITY","CFA1_B_6");
 		aBook.setProperty("URL","https://docs.google.com/document/d/1iO6AZhvnmEgPtwTMlx1AQ7rruTBf3lPnJhrrt4u-bx8");
 		aBook.setProperty("Q_URL","https://docs.google.com/spreadsheets/d/e/2PACX-1vQSOA3nTldlgKyJhkKcEcMqvmA_F0XOZGgequReBT90LVr-3Y00Y8Ci3msNA19zyiwmVPj3MDgLGDkt/pub?output=pdf");
-		aBook.setProperty("HTML_URL","https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/CFA1_B_6.html");
+		aBook.setProperty("HTML_URL","https://storage.googleapis.com/bright-analyst-bucket/BA-CFA-Level1/NOTES/HTML/CFA1_B_6.html");
 		datastore.put(aBook);
 
 

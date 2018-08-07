@@ -3,7 +3,7 @@
 	<application>stoked-outlook-179704</application>
 	<version>1</version>
 	<threadsafe>true</threadsafe>
-
+	<runtime>java8</runtime>
 	<resource-files>
 		<include path="/**.csv" />
 		<include path="/**.htm" />

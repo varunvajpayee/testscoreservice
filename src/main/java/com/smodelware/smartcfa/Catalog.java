@@ -64,7 +64,7 @@ public class Catalog {
         //InputStream l3InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRrGxbPVhPDzIyFJswEcUQax7yokl4mnVmc7qBC-pFWF9LqESgsHXf9Nxl-tDCm9nJ_hPr_UZvlo-nO/pub?output=csv"); //CFA LEVEL 3
         Entity entity = null;
 
-        if(CourseType.CFA_LEVEL_3.getCourseType().equals(courseName)){
+        if(CourseType.CFA_LEVEL_3.toString().equals(courseName)){
             InputStream l3InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vTxP_Dv1YgM6OcmhT_4xMuwYn2Q_APGBcIesyPgcyZAABT78J0q9qErwt5d_dfZ4GsnXEi7JcjKBloE/pub?output=csv"); //CFA LEVEL 3
             entity = contentService.loadCatalog(l3InputStream,CourseType.CFA_LEVEL_3.getCourseType(),"2018","https://docs.google.com/document/d/e/2PACX-1vQ_ft5XODlcwXLN3KrCVuWZBcQ57w6lJrluKNtYBHoveDxUwkbSvH9xNlqBQvZnmpkqKbehVhJPv7g7/pub");
         }
@@ -138,7 +138,24 @@ public class Catalog {
         }
 
         if (cookie != null) {
-            Item item = contentService.getCatalogTree(cookie.getValue(),iParamName);
+
+            Item item = null;
+            /*if("VIDEO".equals(iParamName)){
+                item = new Item();
+
+                Item courseItem = new Item();
+                courseItem.setKind("COURSE");
+                courseItem.setId("CFA_VIDEO");
+                courseItem.setLeaf(true);
+                courseItem.setText("Intro Video");
+                courseItem.setView("Vpanel");
+                courseItem.setUrl("https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/VIDEO/test-mp4.mp4," +
+                        "https://storage.cloud.google.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/VIDEO/test1.mp4");
+                item.getItems().add(courseItem);
+            }
+            else {*/
+                item = contentService.getCatalogTree(cookie.getValue(),iParamName);
+            //}
             Response rs = Response.ok(item).build();
             return rs;
         }
