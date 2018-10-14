@@ -2,6 +2,7 @@ package com.smodelware.smartcfa;
 
 import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
+import com.google.common.base.Strings;
 import com.smodelware.smartcfa.service.ContentService;
 import com.smodelware.smartcfa.service.UserService;
 import com.smodelware.smartcfa.util.ContentType;
@@ -53,6 +54,21 @@ public class Catalog {
             .ok(contentService.getContent(iParentKey,iQueryKind))
             .build();
     }
+
+
+    @GET
+    @Path("/updateCatalog")
+    public Response updateCatalog()
+    {
+        InputStream l3InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRjE3RCQi2BypX6F4wHBywuF74ZUXERRjGRt9NMHBIFS3RKJIIzv6gqYshtLTuKmH3HxdSdeMRQJvGT/pub?output=csv"); //CFA LEVEL 3
+        contentService.updateCatalog(l3InputStream);
+
+        InputStream l1InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vRWvSZ3ejRZku-RCQ1LeRNspnxcgD-KFys5LzAAdn1xux6Cpq3IBpr4axlOW_IZJFqIDNUkAkwr4tzh/pub?output=csv"); //CFA LEVEL 1
+        contentService.updateCatalog(l1InputStream);
+        return Response
+            .ok(1)
+            .build();
+    }
     
     @GET
     @Path("/loadindex/{course_name}")
@@ -69,7 +85,7 @@ public class Catalog {
             entity = contentService.loadCatalog(l3InputStream,CourseType.CFA_LEVEL_3.getCourseType(),"2018","https://docs.google.com/document/d/e/2PACX-1vQ_ft5XODlcwXLN3KrCVuWZBcQ57w6lJrluKNtYBHoveDxUwkbSvH9xNlqBQvZnmpkqKbehVhJPv7g7/pub");
         }
         else  {
-            InputStream l1InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vQze80FFjggeHGdEVDcRfavOF5C4X9O1qNn68B80Kqaq2KagInAJ1_m6JSHmG1_3y7Og4dNNcT35IvR/pub?output=csv"); //CFA LEVEL 1
+            InputStream l1InputStream =  contentService.getContentFromCloudStorage("https://docs.google.com/spreadsheets/d/e/2PACX-1vQze80FFjggeHGdEVDcRfavOF5C4X9O1qNn68B80Kqaq2KagInAJ1_m6JSHmG1_3y7Og4dNNcT35IvR/pub?output=csv");//"https://docs.google.com/spreadsheets/d/e/2PACX-1vQGYX9e1fXKTX5-eOb5GtrC0HYgs7xWdATkhIeWAHIR-nrN2T5Tx24xsHIXyOulgaKkY9EUIPO7SrzN/pub?output=csv
             entity =  contentService.loadCatalog(l1InputStream,CourseType.CFA_LEVEL_1.getCourseType(),"2018","https://docs.google.com/document/d/e/2PACX-1vQtZfBrOIWHVD-ZeLPgILBd8OfRUx7L8oj5ZNzo-7CS7hXHaUhaAPkaDrLwMT6njmG2Brnq6D9qisgl/pub");
 
         }
@@ -127,9 +143,11 @@ public class Catalog {
     @Path("/getCatalogTree")
     @JSONP(queryParam="callback")
     @Produces({"application/javascript"})
-    public Response  getCatalogTree(@QueryParam("callback") String callback,@CookieParam("login") Cookie cookie,@QueryParam("paramName") String paramName)
+    public Response  getCatalogTree(@QueryParam("callback") String callback,@CookieParam("login") Cookie cookie,@QueryParam("paramName") String paramName,@QueryParam("courseName") String courseName)
     {
         String iParamName=paramName==null?"NOTE":paramName;
+        //String iCourseName=courseName==null?"CFA_LEVEL_1":courseName;
+
         java.net.URI location = null;
         try {
             location = new java.net.URI("../");
@@ -138,24 +156,14 @@ public class Catalog {
         }
 
         if (cookie != null) {
-
             Item item = null;
-            /*if("VIDEO".equals(iParamName)){
-                item = new Item();
-
-                Item courseItem = new Item();
-                courseItem.setKind("COURSE");
-                courseItem.setId("CFA_VIDEO");
-                courseItem.setLeaf(true);
-                courseItem.setText("Intro Video");
-                courseItem.setView("Vpanel");
-                courseItem.setUrl("https://storage.googleapis.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/VIDEO/test-mp4.mp4," +
-                        "https://storage.cloud.google.com/stoked-outlook-179704.appspot.com/BA-CFA-Level1/VIDEO/test1.mp4");
-                item.getItems().add(courseItem);
+            if(Strings.isNullOrEmpty(courseName)) {
+                item = contentService.getAllCourses(cookie.getValue(), iParamName);
             }
-            else {*/
-                item = contentService.getCatalogTree(cookie.getValue(),iParamName);
-            //}
+            else{
+                item = contentService.getCourseContent(cookie.getValue(), iParamName,courseName);
+            }
+
             Response rs = Response.ok(item).build();
             return rs;
         }

@@ -35,9 +35,7 @@ import com.smodelware.smartcfa.vo.Question;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -148,9 +146,26 @@ public List<Question>  getQuestions(List<Entity> entites ,Integer sIndex,Integer
 	return questions;
 }
 
+public Item getCourseContent(String userId,String contentTypeStr, String courseName)  {
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity userSettingEntity = getUserSetting(userId);
+    String contentLevel = getContentLevel(userSettingEntity, contentTypeStr);
+	Key courseKey =  new KeyFactory.Builder(ContentType.COURSE.name(),courseName).getKey();
+	Entity courseEntity = null;
+	try {
+		courseEntity = datastore.get(courseKey);
+	} catch (EntityNotFoundException e) {
+		e.printStackTrace();
+		return null;
+	}
+	Item courseItem = Item.convertEntityToItem(courseEntity, false, null, contentTypeStr, null);
+	getBooksforACourse(contentTypeStr, contentLevel, courseItem);
+
+    return courseItem;
+}
 
 
-public Item getCatalogTree(String userId,String contentTypeStr)
+public Item getAllCourses(String userId,String contentTypeStr)
 {
 	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -181,75 +196,81 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		}
 
 		Item courseItem = Item.convertEntityToItem(courseEntity, false, null, contentTypeStr, null);
-		String cAncestorId = courseItem.getKind()+"-"+courseItem.getId();//"COURSE-CFA_LEVEL_1"
+        rootItem.getItems().add(courseItem);
 
-		List<Entity> bookEntities = queryEntityBasedOnKindAndName(cAncestorId, ContentType.BOOK.getContentType());
-		rootItem.getItems().add(courseItem);
-		for (Entity bookEntity : bookEntities) {
-			log.info("key:" + bookEntity.getProperties().get("BOOK_ID"));
-			Query q = new Query("BOOK_MAP").setFilter(new FilterPredicate("IDENTITY", FilterOperator.EQUAL, bookEntity.getProperties().get("BOOK_ID")));
-			Entity userTestEntity = datastore.prepare(q).asSingleEntity();
-			String url = String.valueOf(userTestEntity.getProperties().get("HTML_URL"));
-
-			Item bookItem = Item.convertEntityToItem(bookEntity, false, cAncestorId, contentTypeStr, url);
-			if (bookItem == null) {
-				continue;
-			}
-			else{
-				courseItem.getItems().add(bookItem);
-			}
-			if (!ContentType.BOOK.getContentType().equals(contentLevel)) {
-				String cbAncestorId = cAncestorId + "|" + bookItem.getKind() + "-" + bookItem.getId();
-				List<Entity> ssEntities = queryEntityBasedOnKindAndName(cbAncestorId, ContentType.STUDY_SESSION.getContentType());
-				for (Entity ssEntity : ssEntities) {
-					Item ssItem = Item.convertEntityToItem(ssEntity, false, cbAncestorId, contentTypeStr, url);
-					if (ssItem == null) {
-						continue;
-					}
-					else{
-						bookItem.getItems().add(ssItem);
-					}
-
-					if (!ContentType.STUDY_SESSION.getContentType().equals(contentLevel)) {
-						String scbAncestorId = cbAncestorId + "|" + ssItem.getKind() + "-" + ssItem.getId();
-						List<Entity> readingEntities = queryEntityBasedOnKindAndName(scbAncestorId, ContentType.READING.getContentType());
-						for (Entity readingEntity : readingEntities) {
-							Item readingItem = Item.convertEntityToItem(readingEntity, false, scbAncestorId, contentTypeStr, url);
-							if (readingItem == null) {
-								continue;
-							}
-							else{
-								ssItem.getItems().add(readingItem);
-							}
-							if (!ContentType.READING.getContentType().equals(contentLevel)) {
-								String rscbAncestorId = scbAncestorId + "|" + readingItem.getKind() + "-" + readingItem.getId();
-								List<Entity> losEntities = queryEntityBasedOnKindAndName(rscbAncestorId, "LOS");
-								List<Item> losItems = Item.convertEntitiesToItem(losEntities, true, rscbAncestorId, contentTypeStr, url);
-								for(Item item:losItems){
-									if(item!=null){
-										readingItem.getItems().add(item);
-									}
-								}
-							} else {
-								readingItem.setLeaf(true);
-							}
-						}
-					} else {
-						ssItem.setLeaf(true);
-					}
-				}
-			} else {
-				bookItem.setLeaf(true);
-			}
-
-		}
+        getBooksforACourse(contentTypeStr, contentLevel, courseItem);
 
 	}
 	return rootItem;
 }
 
+    private void getBooksforACourse(String contentTypeStr, String contentLevel, Item courseItem) {
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        String cAncestorId = courseItem.getKind()+"-"+courseItem.getId();//"COURSE-CFA_LEVEL_1"
+        List<Entity> bookEntities = queryEntityBasedOnKindAndName(cAncestorId, ContentType.BOOK.getContentType());
 
-	private Entity getUserSetting(String userId){
+        for (Entity bookEntity : bookEntities) {
+            log.info("key:" + bookEntity.getProperties().get("BOOK_ID"));
+            Query q = new Query("BOOK_MAP").setFilter(new FilterPredicate("IDENTITY", FilterOperator.EQUAL, bookEntity.getProperties().get("BOOK_ID")));
+            Entity userTestEntity = datastore.prepare(q).asSingleEntity();
+            String url = String.valueOf(userTestEntity.getProperties().get("HTML_URL"));
+
+            Item bookItem = Item.convertEntityToItem(bookEntity, false, cAncestorId, contentTypeStr, url);
+            if (bookItem == null) {
+                continue;
+            }
+            else{
+                courseItem.getItems().add(bookItem);
+            }
+            if (!ContentType.BOOK.getContentType().equals(contentLevel)) {
+                String cbAncestorId = cAncestorId + "|" + bookItem.getKind() + "-" + bookItem.getId();
+                List<Entity> ssEntities = queryEntityBasedOnKindAndName(cbAncestorId, ContentType.STUDY_SESSION.getContentType());
+                for (Entity ssEntity : ssEntities) {
+                    Item ssItem = Item.convertEntityToItem(ssEntity, false, cbAncestorId, contentTypeStr, url);
+                    if (ssItem == null) {
+                        continue;
+                    }
+                    else{
+                        bookItem.getItems().add(ssItem);
+                    }
+
+                    if (!ContentType.STUDY_SESSION.getContentType().equals(contentLevel)) {
+                        String scbAncestorId = cbAncestorId + "|" + ssItem.getKind() + "-" + ssItem.getId();
+                        List<Entity> readingEntities = queryEntityBasedOnKindAndName(scbAncestorId, ContentType.READING.getContentType());
+                        for (Entity readingEntity : readingEntities) {
+                            Item readingItem = Item.convertEntityToItem(readingEntity, false, scbAncestorId, contentTypeStr, url);
+                            if (readingItem == null) {
+                                continue;
+                            }
+                            else{
+                                ssItem.getItems().add(readingItem);
+                            }
+                            if (!ContentType.READING.getContentType().equals(contentLevel)) {
+                                String rscbAncestorId = scbAncestorId + "|" + readingItem.getKind() + "-" + readingItem.getId();
+                                List<Entity> losEntities = queryEntityBasedOnKindAndName(rscbAncestorId, "LOS");
+                                List<Item> losItems = Item.convertEntitiesToItem(losEntities, true, rscbAncestorId, contentTypeStr, url);
+                                for(Item item:losItems){
+                                    if(item!=null){
+                                        readingItem.getItems().add(item);
+                                    }
+                                }
+                            } else {
+                                readingItem.setLeaf(true);
+                            }
+                        }
+                    } else {
+                        ssItem.setLeaf(true);
+                    }
+                }
+            } else {
+                bookItem.setLeaf(true);
+            }
+
+        }
+    }
+
+
+    private Entity getUserSetting(String userId){
 		UserService userService = new UserService();
 		return userService.getUserSetting(userId);
 	}
@@ -427,6 +448,65 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		return userTestEntity;
 	}
 
+	//TODO: USE EMBEDDED ENTITIES
+	public void updateCatalog(InputStream ins){
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		final String DELIMITER = ",";
+		BufferedReader fileReader = null;
+		try {
+			String line = "";
+			fileReader = new BufferedReader(new InputStreamReader(ins));
+
+			while ((line = fileReader.readLine()) != null) {
+				String[] tokens = line.split(DELIMITER);
+				Entity losEnt = queryEntityBasedOnKindAndIdWithoutParent(ContentType.LOS.toString(),tokens[0]);
+
+				if(losEnt.getProperty("VIDEO_URL").toString().indexOf(tokens[1])!=-1){
+					continue;
+				}
+
+				losEnt.setProperty("VIDEO_URL", new Text(tokens[1]));
+				datastore.put(losEnt);
+
+				Entity readingEnt = datastore.get(losEnt.getParent());
+				updateUrl(losEnt,readingEnt);
+				datastore.put(readingEnt);
+
+				Entity ssEnt = datastore.get(readingEnt.getParent());
+				updateUrl(readingEnt, ssEnt);
+				datastore.put(ssEnt);
+
+				Entity bookEnt = datastore.get(ssEnt.getParent());
+				updateUrl(ssEnt,bookEnt);
+				datastore.put(bookEnt);
+
+				Entity courseEnt = datastore.get(bookEnt.getParent());
+				updateUrl(bookEnt,courseEnt);
+				datastore.put(courseEnt);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally
+		{
+			try {
+				fileReader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void updateUrl(Entity readingEnt, Entity ssEnt) {
+		if("NONE".equals(ssEnt.getProperty("VIDEO_URL").toString())){
+            ssEnt.setProperty(" VIDEO_URL",new Text(String.valueOf(readingEnt.getProperty("VIDEO_URL"))));
+        }
+        else {
+            ssEnt.setProperty("VIDEO_URL",new Text(ssEnt.getProperty("VIDEO_URL")+","+readingEnt.getProperty("VIDEO_URL")));
+        }
+	}
+
 	public Entity loadCatalog(InputStream ins, String courseName, String courseYear,String url ) {
 	  DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	  //InputStream ins = getInputStream(fileUrl);
@@ -487,7 +567,7 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 					  rqCount = rqCount+lqCount;
 					  aLos.setProperty("Q_COUNT",lqCount);
 					  String losVideoUrl = aLosStr.split("\\$")[4];
-                      aLos.setProperty("VIDEO_URL", losVideoUrl);
+                      aLos.setProperty("VIDEO_URL", new Text(losVideoUrl));
                       if(!"NONE".equals(losVideoUrl)) {
 						  readingVideoUrl = readingVideoUrl + losVideoUrl+",";
 					  }
@@ -496,11 +576,11 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 				  sqCount = sqCount+rqCount;
 				  aReading.setProperty("Q_COUNT",rqCount);
 				  if(!Strings.isNullOrEmpty(readingVideoUrl)){
-					  aReading.setProperty("VIDEO_URL", readingVideoUrl);
+					  aReading.setProperty("VIDEO_URL", new Text(readingVideoUrl));
 					  ssVideoUrl = ssVideoUrl+readingVideoUrl;
 				  }
 				  else {
-					  aReading.setProperty("VIDEO_URL", "NONE");
+					  aReading.setProperty("VIDEO_URL", new Text("NONE"));
 				  }
 
 				  datastore.put(aReading);
@@ -508,11 +588,11 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 			  bqCount = bqCount+sqCount;
 			  aStudySession.setProperty("Q_COUNT",sqCount);
 			  if(!Strings.isNullOrEmpty(ssVideoUrl)){
-				  aStudySession.setProperty("VIDEO_URL", ssVideoUrl);
+				  aStudySession.setProperty("VIDEO_URL", new Text(ssVideoUrl));
 				  bookVideoUrl = bookVideoUrl+ssVideoUrl;
 			  }
 			  else {
-				  aStudySession.setProperty("VIDEO_URL", "NONE");
+				  aStudySession.setProperty("VIDEO_URL", new Text("NONE"));
 			  }
 			  datastore.put(aStudySession);
     	  }
@@ -520,20 +600,20 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 		  cqCount =cqCount+bqCount;
 		  aBook.setProperty("Q_COUNT",bqCount);
 		  if(!Strings.isNullOrEmpty(bookVideoUrl)){
-			  aBook.setProperty("VIDEO_URL", bookVideoUrl);
+			  aBook.setProperty("VIDEO_URL", new Text(bookVideoUrl));
 			  courseVideoUrl = courseVideoUrl+bookVideoUrl;
 		  }
 		  else {
-			  aBook.setProperty("VIDEO_URL", "NONE");
+			  aBook.setProperty("VIDEO_URL", new Text("NONE"));
 		  }
 		  datastore.put(aBook);
       }
 		course.setProperty("Q_COUNT",cqCount);
 		if(!Strings.isNullOrEmpty(courseVideoUrl)){
-			course.setProperty("VIDEO_URL", courseVideoUrl);
+			course.setProperty("VIDEO_URL", new Text(courseVideoUrl));
 		}
 		else {
-			course.setProperty("VIDEO_URL", "NONE");
+			course.setProperty("VIDEO_URL", new Text("NONE"));
 		}
 		datastore.put(course);
   		return course;
@@ -553,15 +633,22 @@ public Item getCatalogTree(String userId,String contentTypeStr)
 
 	public void performScriptOps() {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		/*UserService userService = new UserService();
+		UserService userService = new UserService();
 		Query query = new Query("USER");
 		Iterable<Entity> entityIterator = datastore.prepare(query).asIterable();
 		for(Entity entity: entityIterator){
+			String courseName = String.valueOf(entity.getProperty("course"));
+			if(Strings.isNullOrEmpty(courseName)){
+				entity.setProperty("course", "ALL");
+			}
+			else if(!"ALL".equals(courseName) && courseName.indexOf("2018")==-1){
+				courseName = "2018_"+courseName;
+			}
 
-			entity.setProperty("course", CourseType.CFA_LEVEL_3.getCourseType());
+			entity.setProperty("course", courseName);
 			datastore.put(entity);
-			userService.saveUserSetting(entity.getProperty("userId").toString(), ContentType.LOS.getContentType(),ContentType.LOS.getContentType(),"5","ENROLLED");
-		}*/
+			userService.saveUserSetting(entity.getProperty("userId").toString(), ContentType.LOS.getContentType(),ContentType.LOS.getContentType(),"5","ALL");
+		}
 
 		Entity aBook = new Entity("BOOK_MAP","CFA3_B_1");
 		aBook.setProperty("IDENTITY","CFA3_B_1");

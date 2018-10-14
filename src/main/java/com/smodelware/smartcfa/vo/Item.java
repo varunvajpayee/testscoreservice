@@ -1,6 +1,7 @@
 package com.smodelware.smartcfa.vo;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import com.smodelware.smartcfa.util.ContentType;
 
 import java.util.ArrayList;
@@ -112,9 +113,9 @@ public class Item
 		}
 		else if( ContentType.VIDEO.getContentType().equals(contentTypeStr)) {
 			item.setView("Vpanel");
-			if(entity.getProperty("VIDEO_URL") !=null && !"NONE".equals(String.valueOf(entity.getProperty("VIDEO_URL"))))	{
+			if(entity.getProperty("VIDEO_URL") !=null && !"NONE".equals((((Text)entity.getProperty("VIDEO_URL")).getValue()))){
 				item.setText(String.valueOf(entity.getProperties().get("name"))+"<br><b>(Video Present)</b>");
-				item.setUrl(String.valueOf(entity.getProperty("VIDEO_URL"))+",");
+				item.setUrl(((Text)entity.getProperty("VIDEO_URL")).getValue()+",");
 			}
 			else {
 				return null;
