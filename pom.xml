@@ -204,6 +204,7 @@
 					<version>1.3.1</version>
 					<configuration>
 						<project>stoked-outlook-179704</project>
+						<!--<project>testscoreservice</project>-->
 						<version>1</version>
 						 <port>80</port>
 					</configuration>

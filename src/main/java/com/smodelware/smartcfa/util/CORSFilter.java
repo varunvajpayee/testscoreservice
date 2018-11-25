@@ -22,7 +22,16 @@ public class CORSFilter implements Filter {
         // Just ACCEPT and REPLY OK if OPTIONS
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
         System.out.print(request.getHeader("Access-Control-Allow-Origin"));
-        if(request.getHeader("Origin") != null && (request.getHeader("Origin").equals("http://localhost") ||request.getHeader("Origin").equals("http://localhost:4200") ||request.getHeader("Origin").equals("http://localhost:1841") || request.getHeader("Origin").equals("https://testscoreservice.appspot.com") || request.getHeader("Origin").equals("https://brightanalyst.com")|| request.getHeader("Origin").equals("https://www.brightanalyst.com")))
+        if(request.getHeader("Origin") != null &&
+                (       request.getHeader("Origin").equals("http://localhost")
+                        ||request.getHeader("Origin").equals("http://localhost:4200")
+                        ||request.getHeader("Origin").equals("http://localhost:1841")
+                        || request.getHeader("Origin").equals("https://testscoreservice.appspot.com")
+                        || request.getHeader("Origin").equals("https://stoked-outlook-179704.appspot.com")
+                        || request.getHeader("Origin").equals("https://brightanalyst.com")
+                        || request.getHeader("Origin").equals("https://www.brightanalyst.com")
+                )
+          )
         {
             resp.addHeader("Access-Control-Allow-Origin",request.getHeader("Origin"));
         }

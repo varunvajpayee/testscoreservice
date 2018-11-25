@@ -302,6 +302,13 @@ public class User
 	}
 
 	@GET
+	@Path("/getEmail")
+	public Response getEmail()
+	{
+		return Response.ok(userService.getUserEmails()).build();
+	}
+
+	@GET
 	@Path("/getUserSetting")
 	@JSONP(queryParam="callback")
 	@Produces({"application/javascript"})

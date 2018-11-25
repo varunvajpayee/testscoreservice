@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -92,6 +93,18 @@ public class UserService
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		datastore.put(aUser);
 		return aUser;
+	}
+
+	public List<String> getUserEmails()
+	{
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Query query = new Query("USER");
+		Iterable<Entity> entities = datastore.prepare(query).asIterable();
+		List<String> emails = new ArrayList<>();
+		for(Entity entity:entities){
+			emails.add(entity.getProperty("email").toString());
+		}
+		return emails;
 	}
 
 	public Entity findUserBasedOnUserName(String userName)
